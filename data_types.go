@@ -71,6 +71,11 @@ const (
 	HTTPForbidden           HTTPStatusCode = 403
 	HTTPNotFound            HTTPStatusCode = 404
 	HTTPEnhanceYourCalm     HTTPStatusCode = 420
+	// HTTPTooManyRequests: local addition, not in the pinned upstream
+	// version of this file. Confirmed live as GroupMe's actual rate-limit
+	// response code (standard 429, not the quirky 420 above, which this
+	// library's original author apparently expected instead).
+	HTTPTooManyRequests     HTTPStatusCode = 429
 	HTTPInternalServerError HTTPStatusCode = 500
 	HTTPBadGateway          HTTPStatusCode = 502
 	HTTPServiceUnavailable  HTTPStatusCode = 503
@@ -88,6 +93,7 @@ func (c HTTPStatusCode) String() string {
 		HTTPForbidden:           "request refused due to update limits",
 		HTTPNotFound:            "URI is invalid or resource does not exist",
 		HTTPEnhanceYourCalm:     "application is being rate limited",
+		HTTPTooManyRequests:     "application is being rate limited",
 		HTTPInternalServerError: "something unexpected occurred",
 		HTTPBadGateway:          "GroupMe is down or being upgraded",
 		HTTPServiceUnavailable:  "servers are overloaded, try again later",
