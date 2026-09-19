@@ -121,6 +121,24 @@ type Message struct {
 	ImageURL    string        `json:"image_url,omitempty"`
 	FavoritedBy []string      `json:"favorited_by,omitempty"`
 	Attachments []*Attachment `json:"attachments,omitempty"`
+	// Reactions carries GroupMe's newer per-emoji reaction data (each
+	// entry is one emoji, with the list of users who reacted with it).
+	// This is distinct from -- and newer than -- FavoritedBy, which only
+	// ever represented a single undifferentiated "like" (this library was
+	// pinned before GroupMe added per-emoji reactions; not present
+	// upstream, added locally). Confirmed live against a real message: a
+	// 👍 reaction shows up here with code "\U0001F44D", NOT in FavoritedBy
+	// alone in any way that identifies which emoji was used.
+	Reactions []Reaction `json:"reactions,omitempty"`
+}
+
+// Reaction is one emoji's worth of reactions on a message: the emoji
+// itself (as a literal unicode string, e.g. "❤️" or
+// "\U0001F44D") and every user who reacted with it. See Message.Reactions.
+type Reaction struct {
+	Type    string   `json:"type,omitempty"`
+	Code    string   `json:"code,omitempty"`
+	UserIDs []string `json:"user_ids,omitempty"`
 }
 
 func (m *Message) String() string {
