@@ -162,6 +162,13 @@ const (
 	Image    attachmentType = "image"
 	Location attachmentType = "location"
 	Emoji    attachmentType = "emoji"
+	// Video, File, and Reply: local additions, not in the pinned upstream
+	// version of this file (which predates this bridge having ever
+	// handled them). Confirmed against the pre-2023 bridge's own
+	// attachment-type switch as the real wire values GroupMe uses.
+	Video attachmentType = "video"
+	File  attachmentType = "file"
+	Reply attachmentType = "reply"
 )
 
 // Attachment is a GroupMe message attachment, returned in JSON API responses
