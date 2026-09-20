@@ -151,12 +151,26 @@ func (r *PushSubscription) StartListening(context context.Context, client FayeCl
 
 			handler, ok := RealTimeHandlers[contentType]
 			if !ok {
-				if contentType == "ping" ||
-					len(contentType) == 0 ||
-					content == nil {
-					continue
+				// Confirmed live as a real, crash-causing bug (not a local
+				// change -- this is exactly how the pinned upstream
+				// library reads): falling through to call handler(...)
+				// below when the lookup missed left handler as its zero
+				// value (nil), so any push message type without a
+				// registered RealTimeHandlers entry -- only
+				// "direct_message.create"/"line.create"/"like.create"/
+				// "membership.create"/"favorite" are registered, see
+				// real_time_handler.go -- immediately panics with a nil
+				// pointer dereference. GroupMe pushes plenty of other
+				// message types over this same channel (typing
+				// indicators being the most frequent in practice), so
+				// this wasn't a rare edge case: it crash-looped the
+				// entire bridge process every time one arrived, observed
+				// live tearing down message delivery for real. Now
+				// just skips instead of calling a nil handler.
+				if contentType != "ping" && len(contentType) != 0 && content != nil {
+					log.Println("Unable to handle GroupMe message type", contentType)
 				}
-				log.Println("Unable to handle GroupMe message type", contentType)
+				continue
 			}
 
 			handler(r, channel, content)
