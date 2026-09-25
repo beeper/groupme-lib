@@ -85,6 +85,7 @@ type Member struct {
 	ID           ID     `json:"id,omitempty"`
 	UserID       ID     `json:"user_id,omitempty"`
 	Nickname     string `json:"nickname,omitempty"`
+	Name         string `json:"name,omitempty"` // Account-wide name; Nickname is per-group.
 	Muted        bool   `json:"muted,omitempty"`
 	ImageURL     string `json:"image_url,omitempty"`
 	AutoKicked   bool   `json:"autokicked,omitempty"`
