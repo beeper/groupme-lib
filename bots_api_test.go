@@ -54,7 +54,7 @@ func TestBotsAPISuite(t *testing.T) {
 
 func botsTestRouter() *mux.Router {
 	router := mux.NewRouter()
-	authRouter := router.Queries("token", "").Subrouter()
+	authRouter := router.Headers("X-Access-Token", "").Subrouter()
 
 	// Create
 	authRouter.Path("/bots").

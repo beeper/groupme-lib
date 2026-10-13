@@ -53,7 +53,7 @@ func TestDirectMessagesAPISuite(t *testing.T) {
 
 // nolint // not duplicate code
 func directMessagesTestRouter() *mux.Router {
-	router := mux.NewRouter().Queries("token", "").Subrouter()
+	router := mux.NewRouter().Headers("X-Access-Token", "").Subrouter()
 
 	// Index
 	router.Path("/direct_messages").
@@ -125,7 +125,7 @@ func directMessagesTestRouter() *mux.Router {
 			w.WriteHeader(201)
 			fmt.Fprint(w, `{
 				"response": {
-					"message": {
+					"direct_message": {
 						"id": "1234567890",
 						"source_guid": "GUID",
 						"recipient_id": "20",

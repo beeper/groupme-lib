@@ -18,7 +18,7 @@ func (s *LikesAPISuite) SetupSuite() {
 }
 
 func (s *LikesAPISuite) TestLikesCreate() {
-	err := s.client.CreateLike(context.Background(), "1", "1")
+	err := s.client.CreateLike(context.Background(), "1", "1", "")
 	s.Require().NoError(err)
 }
 
@@ -33,7 +33,7 @@ func TestLikesAPISuite(t *testing.T) {
 
 // nolint // not duplicate code
 func likesTestRouter() *mux.Router {
-	router := mux.NewRouter().Queries("token", "").Subrouter()
+	router := mux.NewRouter().Headers("X-Access-Token", "").Subrouter()
 
 	// Create
 	router.Path(`/messages/{conversation_id}/{message_id}/like`).

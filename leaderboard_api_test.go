@@ -51,7 +51,7 @@ func TestLeaderboardAPISuite(t *testing.T) {
 
 // nolint // not duplicate code
 func leaderboardTestRouter() *mux.Router {
-	router := mux.NewRouter().Queries("token", "").Subrouter()
+	router := mux.NewRouter().Headers("X-Access-Token", "").Subrouter()
 
 	// Index
 	router.Path("/groups/{id:[0-9]+}/likes").

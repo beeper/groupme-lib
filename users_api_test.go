@@ -36,7 +36,7 @@ func TestUsersAPISuite(t *testing.T) {
 
 // nolint // not duplicate code
 func usersTestRouter() *mux.Router {
-	router := mux.NewRouter().Queries("token", "").Subrouter()
+	router := mux.NewRouter().Headers("X-Access-Token", "").Subrouter()
 
 	// Me
 	router.Path("/users/me").

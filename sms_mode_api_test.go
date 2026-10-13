@@ -30,7 +30,7 @@ func TestSMSModeAPISuite(t *testing.T) {
 
 // nolint // not duplicate code
 func smsModeTestRouter() *mux.Router {
-	router := mux.NewRouter().Queries("token", "").Subrouter()
+	router := mux.NewRouter().Headers("X-Access-Token", "").Subrouter()
 
 	// Create
 	router.Path("/users/sms_mode").

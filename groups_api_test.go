@@ -112,7 +112,7 @@ func TestGroupsAPISuite(t *testing.T) {
 
 // nolint // not duplicate code
 func groupsTestRouter() *mux.Router {
-	router := mux.NewRouter().Queries("token", "").Subrouter()
+	router := mux.NewRouter().Headers("X-Access-Token", "").Subrouter()
 
 	// Index
 	router.Path("/groups").

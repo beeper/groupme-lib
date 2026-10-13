@@ -47,7 +47,7 @@ func TestMembersAPISuite(t *testing.T) {
 }
 
 func membersTestRouter() *mux.Router {
-	router := mux.NewRouter().Queries("token", "").Subrouter()
+	router := mux.NewRouter().Headers("X-Access-Token", "").Subrouter()
 
 	// Add
 	router.Path("/groups/{id:[0-9]+}/members/add").
