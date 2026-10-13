@@ -11,19 +11,10 @@ import (
 
 // GroupMe documentation: https://dev.groupme.com/docs/v3#likes
 //
-// The /like endpoint also accepts an optional JSON body specifying which
-// emoji to react with -- not present in the old dev.groupme.com v3 docs
-// this package was originally written against (GroupMe added per-emoji
-// reactions after this library was last touched), confirmed against the
-// community-maintained docs at
-// https://groupme-js.github.io/GroupMeCommunityDocs/api/conversations/reactions/
-// and by observing real {"reactions": [{"type":"unicode","code":"...","user_ids":[...]}]}
-// data in live API responses. Without a body it's the old generic heart
-// like. GroupMe restricts the unicode option to a fixed set of 15 emoji
-// (see UnicodeLikeIcons in this file); a GroupMe-powerup emoji ({"type":
-// "emoji","pack_id":N,"pack_index":N}) is also accepted but not
-// implemented here -- no sensible way to map an arbitrary Matrix custom
-// emoji to a specific GroupMe powerup pack/index.
+// Per-emoji reactions are not in the v3 docs; see
+// https://groupme-js.github.io/GroupMeCommunityDocs/api/conversations/reactions/.
+// Powerup emoji like icons ({"type":"emoji","pack_id":N,"pack_index":N}) are
+// not implemented.
 
 /*//////// Endpoints ////////*/
 const (
@@ -34,10 +25,7 @@ const (
 	destroyLikeEndpoint = likesEndpointRoot + "/unlike" // POST
 )
 
-// UnicodeLikeIcons is the fixed set of unicode emoji GroupMe accepts for a
-// like_icon of type "unicode" (confirmed against the community docs cited
-// above). CreateLike with any other emoji falls back to the plain heart
-// like (no body) rather than sending a code GroupMe would reject.
+// UnicodeLikeIcons is the fixed set of unicode emoji GroupMe accepts as a like icon.
 var UnicodeLikeIcons = map[string]bool{
 	"❤️": true, "👍": true, "🤣": true, "🎉": true, "🔥": true,
 	"😮": true, "👀": true, "😭": true, "🥺": true, "🙏": true,

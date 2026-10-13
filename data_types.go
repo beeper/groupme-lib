@@ -71,10 +71,6 @@ const (
 	HTTPForbidden           HTTPStatusCode = 403
 	HTTPNotFound            HTTPStatusCode = 404
 	HTTPEnhanceYourCalm     HTTPStatusCode = 420
-	// HTTPTooManyRequests: local addition, not in the pinned upstream
-	// version of this file. Confirmed live as GroupMe's actual rate-limit
-	// response code (standard 429, not the quirky 420 above, which this
-	// library's original author apparently expected instead).
 	HTTPTooManyRequests     HTTPStatusCode = 429
 	HTTPInternalServerError HTTPStatusCode = 500
 	HTTPBadGateway          HTTPStatusCode = 502

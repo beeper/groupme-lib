@@ -76,10 +76,7 @@ func (c Client) do(ctx context.Context, req *http.Request, i interface{}) error 
 
 	getResp, err := c.httpClient.Do(req)
 	if err != nil {
-		// net/http's *url.Error embeds the full request URL, which
-		// doWithAuthToken put the access token into as a query parameter --
-		// so any transport error (timeout, connection reset) would otherwise
-		// leak the token into the bridge's logs verbatim. Drop the query.
+		// *url.Error embeds the request URL; keep any query credentials out of logs.
 		var urlErr *url.Error
 		if errors.As(err, &urlErr) {
 			if u, perr := url.Parse(urlErr.URL); perr == nil {

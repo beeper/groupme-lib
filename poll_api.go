@@ -10,48 +10,31 @@ import (
 	"net/url"
 )
 
-// GroupMe's polls feature (and its API) postdates this library and isn't
-// covered by the old dev.groupme.com v3 docs it was written against;
-// confirmed instead against real live API responses. A poll is addressed
-// by its containing conversation's ID (a group ID in every case observed
-// live) plus its own poll ID -- both of which arrive on every poll.*
-// message's Event.Data (see json.go's PollEventData), so callers
-// shouldn't need to look either up separately.
+// Polls are not in the v3 docs; see
+// https://groupme-js.github.io/GroupMeCommunityDocs/api/groups/polls/.
+// A poll is addressed by its conversation ID and poll ID, both of which are
+// carried on every poll.* message's PollEventData.
 
 const pollEndpoint = "/poll/%s/%s" // GET
 
-// PollOption is one selectable choice in a poll, as returned by GetPoll.
-// Distinct from PollEventOption (json.go), which is the shape embedded in
-// a poll.finished message's Event.Data and carries a final vote tally,
-// not a poll definition.
 type PollOption struct {
 	ID    string `json:"id,omitempty"`
 	Title string `json:"title,omitempty"`
 }
 
-// PollDetail is a poll's full definition, as returned by GetPoll. Only
-// fields confirmed against a real live poll are documented as such below;
-// GroupMe's polls API isn't otherwise documented anywhere.
 type PollDetail struct {
-	ID             string    `json:"id,omitempty"`
-	Subject        string    `json:"subject,omitempty"`
-	OwnerID        string    `json:"owner_id,omitempty"`
-	ConversationID string    `json:"conversation_id,omitempty"`
-	CreatedAt      Timestamp `json:"created_at,omitempty"`
-	Expiration     Timestamp `json:"expiration,omitempty"`
-	// Status is "active" confirmed live; "finished" or similar for an
-	// ended poll is expected but not separately confirmed (a finished
-	// poll's own GetPoll response wasn't checked -- the poll.finished
-	// message's Event.Data already carries the final results directly,
-	// so there was no need to).
-	Status       string       `json:"status,omitempty"`
-	Options      []PollOption `json:"options,omitempty"`
-	LastModified Timestamp    `json:"last_modified,omitempty"`
-	// Type is "single" or "multi". The multi-choice request contract is
-	// documented at https://groupme-js.github.io/GroupMeCommunityDocs/api/groups/polls/.
+	ID             string       `json:"id,omitempty"`
+	Subject        string       `json:"subject,omitempty"`
+	OwnerID        string       `json:"owner_id,omitempty"`
+	ConversationID string       `json:"conversation_id,omitempty"`
+	CreatedAt      Timestamp    `json:"created_at,omitempty"`
+	Expiration     Timestamp    `json:"expiration,omitempty"`
+	Status         string       `json:"status,omitempty"`
+	Options        []PollOption `json:"options,omitempty"`
+	LastModified   Timestamp    `json:"last_modified,omitempty"`
+	// Type is "single" or "multi".
 	Type string `json:"type,omitempty"`
-	// Visibility is "anonymous" confirmed live; a named-voting equivalent
-	// is expected but not confirmed.
+	// Visibility has only been observed as "anonymous".
 	Visibility string `json:"visibility,omitempty"`
 	// MyVotes is the authenticated user's selection from the poll envelope.
 	MyVotes []string `json:"-"`
@@ -65,10 +48,6 @@ type getPollResponse struct {
 	} `json:"poll"`
 }
 
-// GetPoll fetches a poll's full definition (subject, options, status,
-// expiration, etc). conversationID and pollID both come directly off a
-// poll.* message's Event.Data (PollEventData in json.go) -- callers
-// shouldn't need to derive either independently.
 func (c *Client) GetPoll(ctx context.Context, conversationID, pollID string) (*PollDetail, error) {
 	url := fmt.Sprintf(c.endpointBase+pollEndpoint, url.PathEscape(conversationID), url.PathEscape(pollID))
 

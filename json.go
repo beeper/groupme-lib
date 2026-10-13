@@ -122,64 +122,41 @@ type Message struct {
 	ImageURL    string        `json:"image_url,omitempty"`
 	FavoritedBy []string      `json:"favorited_by,omitempty"`
 	Attachments []*Attachment `json:"attachments,omitempty"`
-	// Reactions carries GroupMe's newer per-emoji reaction data (each
-	// entry is one emoji, with the list of users who reacted with it).
-	// This is distinct from -- and newer than -- FavoritedBy, which only
-	// ever represented a single undifferentiated "like" (this library was
-	// pinned before GroupMe added per-emoji reactions; not present
-	// upstream, added locally). Confirmed live against a real message: a
-	// 👍 reaction shows up here with code "\U0001F44D", NOT in FavoritedBy
-	// alone in any way that identifies which emoji was used.
+	// Reactions holds per-emoji reactions; FavoritedBy only records that a
+	// user reacted, not which emoji they used.
 	Reactions []Reaction `json:"reactions,omitempty"`
-	// Event carries structured data for GroupMe's "system event" messages
-	// -- currently only used here for polls (poll.created/poll.reminder/
-	// poll.finished), added well after this library was last touched, so
-	// not present upstream. See PollEventData and Event's own doc comment.
-	Event *Event `json:"event,omitempty"`
+	Event     *Event     `json:"event,omitempty"`
 }
 
-// Reaction is one emoji's worth of reactions on a message: the emoji
-// itself (as a literal unicode string, e.g. "❤️" or
-// "\U0001F44D") and every user who reacted with it. See Message.Reactions.
+// Reaction is one emoji and every user who reacted with it.
 type Reaction struct {
 	Type    string   `json:"type,omitempty"`
 	Code    string   `json:"code,omitempty"`
 	UserIDs []string `json:"user_ids,omitempty"`
 }
 
-// Event is GroupMe's envelope for "system event" messages -- structured
-// data attached to an otherwise-normal Message. Not documented on
-// dev.groupme.com (added after this library was last touched); confirmed
-// against real live API responses. Data's shape depends on Type; see
-// PollEventData for the only Type family currently parsed here
-// ("poll.created"/"poll.reminder"/"poll.finished").
+// Event is the structured payload of a system message. Data's shape depends
+// on Type; poll.* events decode into PollEventData.
 type Event struct {
 	Type string          `json:"type,omitempty"`
 	Data json.RawMessage `json:"data,omitempty"`
 }
 
-// PollEventEntity is the small {id, nickname}-shaped user reference
-// embedded in a poll.created event's Data.User.
 type PollEventEntity struct {
 	ID       string `json:"id,omitempty"`
 	Nickname string `json:"nickname,omitempty"`
 }
 
-// PollEventPoll is the poll summary embedded in every poll.* event's
-// Data.Poll. Only Expiration is populated on poll.reminder; only ID and
-// Subject on poll.created/poll.finished -- callers needing the full
-// definition (options, status, visibility, etc) for an in-progress poll
-// should call Client.GetPoll (poll_api.go) with this ID instead.
+// PollEventPoll is a poll summary. Expiration is only set on poll.reminder;
+// use GetPoll for the full definition.
 type PollEventPoll struct {
 	ID         string    `json:"id,omitempty"`
 	Subject    string    `json:"subject,omitempty"`
 	Expiration Timestamp `json:"expiration,omitempty"`
 }
 
-// PollEventOption is one option's final tally, as embedded in a
-// poll.finished event's Data.Options. VoterIDs is only present for a
-// non-anonymous poll (unconfirmed live -- every poll observed so far was
-// anonymous and only carried Votes).
+// PollEventOption is one option's final tally from poll.finished. VoterIDs is
+// only expected on non-anonymous polls.
 type PollEventOption struct {
 	ID       string   `json:"id,omitempty"`
 	Title    string   `json:"title,omitempty"`
@@ -187,11 +164,8 @@ type PollEventOption struct {
 	VoterIDs []string `json:"voter_ids,omitempty"`
 }
 
-// PollEventData is the parsed shape of a poll.*-type Event's Data field.
-// Which fields are populated depends on Type: poll.created has Poll+User,
-// poll.reminder has just Poll (with Expiration set), poll.finished has
-// Poll+Options (final results). Conversation.ID is present on all three
-// and is the same ID GetPoll expects as conversationID.
+// PollEventData is a poll.* Event's Data: poll.created sets Poll and User,
+// poll.reminder sets Poll, and poll.finished sets Poll and Options.
 type PollEventData struct {
 	Conversation struct {
 		ID string `json:"id,omitempty"`
@@ -222,17 +196,10 @@ const (
 	Image    attachmentType = "image"
 	Location attachmentType = "location"
 	Emoji    attachmentType = "emoji"
-	// Video, File, and Reply: local additions, not in the pinned upstream
-	// version of this file (which predates this bridge having ever
-	// handled them). Confirmed against the pre-2023 bridge's own
-	// attachment-type switch as the real wire values GroupMe uses.
-	Video attachmentType = "video"
-	File  attachmentType = "file"
-	Reply attachmentType = "reply"
-	// Poll: a message announcing a new poll carries one of these
-	// (Attachment.PollID) alongside a "poll.created" Event (see json.go's
-	// Event/PollEventData) with the actual details -- this attachment on
-	// its own is just a pointer, not enough to render the poll.
+	Video    attachmentType = "video"
+	File     attachmentType = "file"
+	Reply    attachmentType = "reply"
+	// Poll only carries PollID; the details are in the message's poll.created Event.
 	Poll attachmentType = "poll"
 )
 
@@ -252,9 +219,7 @@ type Attachment struct {
 	ReplyID         ID             `json:"reply_id,omitempty"`
 	BaseReplyID     ID             `json:"base_reply_id,omitempty"`
 	UserID          ID             `json:"user_id,omitempty"`
-	// PollID: local addition, present on a "poll" attachment. See the
-	// Poll attachmentType constant's doc comment.
-	PollID string `json:"poll_id,omitempty"`
+	PollID          string         `json:"poll_id,omitempty"`
 }
 
 func (a *Attachment) String() string {
