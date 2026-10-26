@@ -119,6 +119,12 @@ func NewPushSubscription(context context.Context) *PushSubscription {
 	return &r
 }
 
+func (r *PushSubscription) reportError(err error) {
+	for _, h := range r.handlers {
+		h.HandleError(err)
+	}
+}
+
 func (r *PushSubscription) AddHandler(h Handler) {
 	r.handlers = append(r.handlers, h)
 }

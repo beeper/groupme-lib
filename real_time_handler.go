@@ -2,6 +2,7 @@ package groupme
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 )
 
@@ -59,7 +60,10 @@ func init() {
 			return
 		}
 		var out Message
-		if json.Unmarshal(b, &out) != nil || out.ID == "" {
+		if err := json.Unmarshal(b, &out); err != nil {
+			r.reportError(fmt.Errorf("failed to decode GroupMe push message: %w", err))
+			return
+		} else if out.ID == "" {
 			return
 		}
 		if out.ConversationID == "" {
