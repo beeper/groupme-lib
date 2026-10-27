@@ -2,6 +2,7 @@
 package groupme
 
 import (
+	"encoding/json"
 	"regexp"
 	"time"
 )
@@ -21,6 +22,20 @@ func (id ID) Valid() bool {
 
 func (id ID) String() string {
 	return string(id)
+}
+
+// UnmarshalJSON also accepts numeric IDs, which GroupMe relays unchanged from
+// clients that send them.
+func (id *ID) UnmarshalJSON(data []byte) error {
+	if len(data) > 0 && data[0] != '"' {
+		var num json.Number
+		if err := json.Unmarshal(data, &num); err != nil {
+			return err
+		}
+		*id = ID(num)
+		return nil
+	}
+	return json.Unmarshal(data, (*string)(id))
 }
 
 // Timestamp is the number of seconds since the UNIX epoch
