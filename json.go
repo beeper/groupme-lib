@@ -197,6 +197,7 @@ const (
 	Location attachmentType = "location"
 	Emoji    attachmentType = "emoji"
 	Video    attachmentType = "video"
+	Audio    attachmentType = "audio"
 	File     attachmentType = "file"
 	Reply    attachmentType = "reply"
 	// Poll only carries PollID; the details are in the message's poll.created Event.
@@ -220,6 +221,12 @@ type Attachment struct {
 	BaseReplyID     ID             `json:"base_reply_id,omitempty"`
 	UserID          ID             `json:"user_id,omitempty"`
 	PollID          string         `json:"poll_id,omitempty"`
+
+	// Duration is in seconds. Peaks holds normalized waveform samples, which
+	// GroupMe clients send either as a JSON array or as a string containing one.
+	Duration      float64         `json:"duration,omitempty"`
+	Peaks         json.RawMessage `json:"peaks,omitempty"`
+	TranscriptURL string          `json:"transcript_url,omitempty"`
 }
 
 func (a *Attachment) String() string {
