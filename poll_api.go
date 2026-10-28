@@ -34,7 +34,7 @@ type PollDetail struct {
 	LastModified   Timestamp    `json:"last_modified,omitempty"`
 	// Type is "single" or "multi".
 	Type string `json:"type,omitempty"`
-	// Visibility has only been observed as "anonymous".
+	// Visibility is "public" or "anonymous".
 	Visibility string `json:"visibility,omitempty"`
 	// MyVotes is the authenticated user's selection from the poll envelope.
 	MyVotes []string `json:"-"`
@@ -46,6 +46,38 @@ type getPollResponse struct {
 		UserVote  string     `json:"user_vote"`
 		UserVotes []string   `json:"user_votes"`
 	} `json:"poll"`
+}
+
+type CreatePollRequest struct {
+	Subject    string       `json:"subject"`
+	Options    []PollOption `json:"options"`
+	Expiration Timestamp    `json:"expiration"`
+	Visibility string       `json:"visibility"`
+	Type       string       `json:"type"`
+}
+
+// CreatePoll returns the poll and the ID of its poll.created announcement.
+func (c *Client) CreatePoll(ctx context.Context, conversationID string, poll *CreatePollRequest) (*PollDetail, ID, error) {
+	body, err := json.Marshal(poll)
+	if err != nil {
+		return nil, "", err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpointBase+"/poll/"+url.PathEscape(conversationID), bytes.NewReader(body))
+	if err != nil {
+		return nil, "", err
+	}
+	var resp struct {
+		getPollResponse
+		Message Message `json:"message"`
+	}
+	if err := c.doWithAuthToken(ctx, req, &resp); err != nil {
+		return nil, "", err
+	}
+	if resp.Poll.Data.ID == "" || resp.Message.ID == "" {
+		return nil, "", fmt.Errorf("GroupMe poll creation response has a missing poll or message ID")
+	}
+	result, err := resp.result(conversationID, resp.Poll.Data.ID)
+	return result, resp.Message.ID, err
 }
 
 func (c *Client) GetPoll(ctx context.Context, conversationID, pollID string) (*PollDetail, error) {

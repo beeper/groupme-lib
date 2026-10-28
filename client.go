@@ -48,7 +48,7 @@ func (c Client) String() string {
 /*/// Handle parsing of nested interface type response ///*/
 type jsonResponse struct {
 	Response response `json:"response"`
-	Meta     `json:"meta"`
+	Meta     Meta     `json:"meta"`
 }
 
 func newJSONResponse(i interface{}) *jsonResponse {

@@ -4,6 +4,7 @@ package groupme
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 // Meta is the error type returned in the GroupMe response.
@@ -11,6 +12,33 @@ import (
 type Meta struct {
 	Code   HTTPStatusCode `json:"code,omitempty"`
 	Errors []string       `json:"errors,omitempty"`
+}
+
+func (m *Meta) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		Code   HTTPStatusCode  `json:"code"`
+		Errors json.RawMessage `json:"errors"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	m.Code, m.Errors = raw.Code, nil
+	if len(raw.Errors) == 0 {
+		return nil
+	}
+	if err := json.Unmarshal(raw.Errors, &m.Errors); err == nil {
+		return nil
+	}
+	// Poll validation errors are keyed by the rejected field.
+	var fields map[string]string
+	if err := json.Unmarshal(raw.Errors, &fields); err != nil {
+		return err
+	}
+	for field, reason := range fields {
+		m.Errors = append(m.Errors, field+": "+reason)
+	}
+	sort.Strings(m.Errors)
+	return nil
 }
 
 // Error returns the code and the error list as a string.
