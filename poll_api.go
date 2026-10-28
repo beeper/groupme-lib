@@ -18,8 +18,10 @@ import (
 const pollEndpoint = "/poll/%s/%s" // GET
 
 type PollOption struct {
-	ID    string `json:"id,omitempty"`
-	Title string `json:"title,omitempty"`
+	ID       string   `json:"id,omitempty"`
+	Title    string   `json:"title,omitempty"`
+	Votes    int      `json:"votes,omitempty"`
+	VoterIDs []string `json:"voter_ids,omitempty"`
 }
 
 type PollDetail struct {

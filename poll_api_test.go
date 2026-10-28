@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -26,8 +27,8 @@ func TestCreatePoll(t *testing.T) {
 				if r.Method != "POST" || r.URL.Path != "/poll/88" || r.Header.Get("X-Access-Token") != "test-token" || r.Header.Get("Content-Type") != "application/json" {
 					t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
 				}
-				var got CreatePollRequest
-				if err := json.NewDecoder(r.Body).Decode(&got); err != nil || !reflect.DeepEqual(&got, input) {
+				got, err := io.ReadAll(r.Body)
+				if err != nil || string(got) != `{"subject":"Choose","options":[{"title":"Yes"},{"title":"No"}],"expiration":1794414187,"visibility":"public","type":"single"}` {
 					t.Errorf("unexpected request body: %+v, %v", got, err)
 				}
 				w.WriteHeader(tc.status)
@@ -46,5 +47,13 @@ func TestCreatePoll(t *testing.T) {
 				t.Fatalf("unexpected create result: %+v, %s, %v", poll, messageID, err)
 			}
 		})
+	}
+}
+
+func TestPollVoters(t *testing.T) {
+	var poll PollDetail
+	err := json.Unmarshal([]byte(`{"options":[{"id":"1","title":"A","votes":2,"voter_ids":["20","30"]},{"id":"2","title":"B"}]}`), &poll)
+	if err != nil || len(poll.Options) != 2 || poll.Options[0].Votes != 2 || !reflect.DeepEqual(poll.Options[0].VoterIDs, []string{"20", "30"}) || poll.Options[1].Votes != 0 || poll.Options[1].VoterIDs != nil {
+		t.Fatalf("unexpected poll voters: %+v, %v", poll, err)
 	}
 }
