@@ -53,6 +53,9 @@ func (p *IntPairs) UnmarshalJSON(data []byte) error {
 	for i, pair := range raw {
 		out[i] = make([]int, len(pair))
 		for j, n := range pair {
+			if n == "" {
+				continue
+			}
 			v, err := n.Int64()
 			if err != nil {
 				return err
