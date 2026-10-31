@@ -244,7 +244,7 @@ type Attachment struct {
 	Latitude        string         `json:"lat,omitempty"`
 	Longitude       string         `json:"lng,omitempty"`
 	Placeholder     string         `json:"placeholder,omitempty"`
-	Charmap         [][]int        `json:"charmap,omitempty"`
+	Charmap         IntPairs       `json:"charmap,omitempty"`
 	ReplyID         ID             `json:"reply_id,omitempty"`
 	BaseReplyID     ID             `json:"base_reply_id,omitempty"`
 	UserID          ID             `json:"user_id,omitempty"`

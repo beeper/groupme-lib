@@ -38,6 +38,32 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, (*string)(id))
 }
 
+type IntPairs [][]int
+
+func (p *IntPairs) UnmarshalJSON(data []byte) error {
+	var raw [][]json.Number
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw == nil {
+		*p = nil
+		return nil
+	}
+	out := make(IntPairs, len(raw))
+	for i, pair := range raw {
+		out[i] = make([]int, len(pair))
+		for j, n := range pair {
+			v, err := n.Int64()
+			if err != nil {
+				return err
+			}
+			out[i][j] = int(v)
+		}
+	}
+	*p = out
+	return nil
+}
+
 // Timestamp is the number of seconds since the UNIX epoch
 type Timestamp uint64
 
