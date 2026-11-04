@@ -25,13 +25,6 @@ const (
 	destroyLikeEndpoint = likesEndpointRoot + "/unlike" // POST
 )
 
-// UnicodeLikeIcons is the fixed set of unicode emoji GroupMe accepts as a like icon.
-var UnicodeLikeIcons = map[string]bool{
-	"❤️": true, "👍": true, "🤣": true, "🎉": true, "🔥": true,
-	"😮": true, "👀": true, "😭": true, "🥺": true, "🙏": true,
-	"💀": true, "🫶": true, "🤬": true, "💅": true, "🫠": true,
-}
-
 /*//////// API Requests ////////*/
 
 // Create
@@ -45,15 +38,13 @@ type createLikeBody struct {
 	LikeIcon *likeIcon `json:"like_icon,omitempty"`
 }
 
-// CreateLike - Like a message. If emoji is one of UnicodeLikeIcons, reacts
-// with that specific emoji; otherwise (including an empty string) falls
-// back to the plain generic heart like, same as calling this before emoji
-// support was added here.
+// CreateLike - Like a message. A non-empty emoji reacts with that unicode
+// emoji; an empty string sends the plain generic heart like.
 func (c *Client) CreateLike(ctx context.Context, conversationID, messageID ID, emoji string) error {
 	url := fmt.Sprintf(c.endpointBase+createLikeEndpoint, conversationID, messageID)
 
 	var body *createLikeBody
-	if UnicodeLikeIcons[emoji] {
+	if emoji != "" {
 		body = &createLikeBody{LikeIcon: &likeIcon{Type: "unicode", Code: emoji}}
 	}
 
