@@ -61,6 +61,10 @@ type Group struct {
 	Members       []*Member     `json:"members,omitempty"`
 	ShareURL      string        `json:"share_url,omitempty"`
 	Messages      GroupMessages `json:"messages,omitempty"`
+	ChildrenCount int           `json:"children_count,omitempty"`
+	ParentID      ID            `json:"parent_id,omitempty"`
+	Topic         string        `json:"topic,omitempty"`
+	AvatarURL     string        `json:"avatar_url,omitempty"`
 }
 
 // GroupMessages is a Group field, only returned in Group JSON API responses
@@ -143,6 +147,7 @@ type Message struct {
 	//ChatID - over push ConversationID seems to be called ChatID
 	ChatID         ID     `json:"chat_id,omitempty"`
 	ConversationID ID     `json:"conversation_id,omitempty"`
+	ParentID       ID     `json:"parent_id,omitempty"`
 	AvatarURL      string `json:"avatar_url,omitempty"`
 	// Maximum length of 1000 characters
 	Text string `json:"text,omitempty"`

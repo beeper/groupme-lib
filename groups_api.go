@@ -29,6 +29,8 @@ const (
 	joinGroupEndpoint        = groupEndpointRoot + "/join/%s"        // POST
 	rejoinGroupEndpoint      = groupsEndpointRoot + "/join"          // POST
 	changeGroupOwnerEndpoint = groupsEndpointRoot + "/change_owners" // POST
+	indexSubgroupsEndpoint   = groupEndpointRoot + "/subgroups"      // GET
+	showSubgroupEndpoint     = groupEndpointRoot + "/subgroups/%s"   // GET
 )
 
 /*//////// Common Request Parameters ////////*/
@@ -150,6 +152,42 @@ Parameters:
 */
 func (c *Client) ShowGroup(ctx context.Context, groupID ID) (*Group, error) {
 	URL := fmt.Sprintf(c.endpointBase+showGroupEndpoint, groupID)
+
+	httpReq, err := http.NewRequest("GET", URL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Group
+	err = c.doWithAuthToken(ctx, httpReq, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
+/*/// Subgroups ///*/
+
+func (c *Client) IndexSubgroups(ctx context.Context, parentID ID) ([]*Group, error) {
+	URL := fmt.Sprintf(c.endpointBase+indexSubgroupsEndpoint, parentID)
+
+	httpReq, err := http.NewRequest("GET", URL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp []*Group
+	err = c.doWithAuthToken(ctx, httpReq, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (c *Client) ShowSubgroup(ctx context.Context, parentID, subgroupID ID) (*Group, error) {
+	URL := fmt.Sprintf(c.endpointBase+showSubgroupEndpoint, parentID, subgroupID)
 
 	httpReq, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
