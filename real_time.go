@@ -3,11 +3,12 @@ package groupme
 import (
 	"context"
 	"errors"
-	"log"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -102,6 +103,7 @@ type FayeClient interface {
 }
 
 type PushSubscription struct {
+	log           zerolog.Logger
 	channel       chan PushMessage
 	fayeClient    FayeClient
 	handlers      []Handler
@@ -113,10 +115,15 @@ type PushSubscription struct {
 func NewPushSubscription(context context.Context) *PushSubscription {
 
 	r := PushSubscription{
+		log:     *zerolog.Ctx(context),
 		channel: make(chan PushMessage, 256),
 	}
 
 	return &r
+}
+
+func (r *PushSubscription) SetLogger(log zerolog.Logger) {
+	r.log = log
 }
 
 func (r *PushSubscription) reportError(err error) {
@@ -160,7 +167,12 @@ func (r *PushSubscription) StartListening(ctx context.Context, client FayeClient
 				if handler := RealTimeHandlers[contentType]; handler != nil && data["subject"] != nil {
 					handler(r, msg.Channel(), data["subject"])
 				} else if contentType != "" && contentType != "ping" {
-					log.Println("Unable to handle GroupMe message type", contentType)
+					r.log.Debug().
+						Str("push_type", contentType).
+						Str("channel", msg.Channel()).
+						Bool("has_handler", handler != nil).
+						Bool("has_subject", data["subject"] != nil).
+						Msg("Unhandled GroupMe push")
 				}
 			}
 		}
